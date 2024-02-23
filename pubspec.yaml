@@ -1,9 +1,9 @@
 name: sistem_configure_vt
-description: "A new Flutter project."
+description: "Progeto para otimizar as configuracoes android."
 
 publish_to: "none"
 
-version: 1.0.0+1
+version: 0.1.0
 
 environment:
   sdk: ">=3.2.6 <4.0.0"
@@ -13,6 +13,12 @@ dependencies:
     sdk: flutter
 
   cupertino_icons: ^1.0.2
+  firebase_core: ^2.25.4
+  firebase_storage: ^11.6.6
+  cloud_firestore: ^4.15.5
+  firebase_remote_config: ^4.3.14
+  return_success_or_error: ^0.17.0
+  get: ^4.6.6
 
 dev_dependencies:
   flutter_test:
