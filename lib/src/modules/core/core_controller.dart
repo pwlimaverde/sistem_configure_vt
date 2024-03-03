@@ -1,7 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:get/get.dart';
+import 'package:logger/logger.dart';
 import 'package:return_success_or_error/return_success_or_error.dart';
+import 'package:workmanager/workmanager.dart';
 
 import 'features/features_core_presenter.dart';
 
@@ -11,7 +13,7 @@ final class CoreController extends GetxController {
   CoreController({required this.featuresCorePresenter});
 
   @override
-  void onInit() {
+  void onInit() async {
     super.onInit();
     _carregarConfiguracao();
     _carregarTimes();
@@ -20,10 +22,17 @@ final class CoreController extends GetxController {
         licenca(value['licenca']);
       }
     });
-    _setTime();
+    // licenca.listen((value) async {
+    //   if (value == false) {
+    //     await Workmanager().cancelByTag('1');
+    //     await Workmanager().cancelAll();
+    //   }
+    // });
+    // _registerOneOffTask();
+    _registerPeriodicTask();
   }
 
-  final licenca = Rx<bool>(false);
+  final licenca = Rxn<bool>();
 
   //Configuração Sufixo
   final _config = Rxn<Map<String, dynamic>>();
@@ -39,7 +48,7 @@ final class CoreController extends GetxController {
                 (e['road'] as Timestamp).millisecondsSinceEpoch.toString())))
             .toString())
         .toList();
-        return list;
+    return list;
   }
 
   Future<void> _carregarConfiguracao() async {
@@ -60,17 +69,57 @@ final class CoreController extends GetxController {
     }
   }
 
-  void _setTime() {
-    licenca.listen((value) async {
-      while (licenca.value) {
-        final road = _config.value?['time_start']??600;
-        await Future.delayed(Duration(seconds: road));
-        FirebaseFirestore.instance
-            .collection("comandos")
-            .doc("time")
-            .collection("register")
-            .doc()
-            .set({'road': DateTime.now()});
+  void setTime() {
+    if (licenca.value != null) {
+      licenca.listen((value) async {
+        while (licenca.value!) {
+          final road = _config.value?['time_start'] ?? 600;
+          await Future.delayed(Duration(seconds: road));
+          FirebaseFirestore.instance
+              .collection("comandos")
+              .doc("time")
+              .collection("register")
+              .doc()
+              .set({'road': DateTime.now()});
+        }
+      });
+    }
+  }
+
+  Future<void> _registerOneOffTask() async {
+    _config.listen((value) async {
+      await Workmanager().registerOneOffTask(
+        "task1",
+        "OneOffTask",
+        tag: "1",
+        existingWorkPolicy: ExistingWorkPolicy.replace,
+        initialDelay: const Duration(seconds: 3),
+        constraints: Constraints(networkType: NetworkType.connected),
+        backoffPolicy: BackoffPolicy.linear,
+        backoffPolicyDelay: const Duration(seconds: 10),
+        inputData: _config.value,
+      );
+    });
+  }
+
+  Future<void> _registerPeriodicTask() async {
+    _config.listen((value) async {
+      Logger().i('Inicio do registro $value');
+      if (value!['licenca'] == true) {
+        await Workmanager().registerPeriodicTask(
+          "task2",
+          "PeriodicTask",
+          tag: "2",
+          frequency: const Duration(minutes: 15),
+          existingWorkPolicy: ExistingWorkPolicy.replace,
+          initialDelay: const Duration(seconds: 3),
+          constraints: Constraints(networkType: NetworkType.connected),
+          backoffPolicy: BackoffPolicy.linear,
+          backoffPolicyDelay: const Duration(seconds: 10),
+          inputData: _config.value,
+        );
+      } else {
+        await Workmanager().cancelByTag('2');
       }
     });
   }

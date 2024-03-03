@@ -20,6 +20,7 @@ dependencies:
   return_success_or_error: ^0.17.0
   get: ^4.6.6
   workmanager: ^0.5.2
+  logger: ^2.0.2+1
   android_power_manager: ^1.0.0
   permission_handler: ^11.3.0
   get_storage: ^2.1.1
