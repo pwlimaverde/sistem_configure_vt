@@ -22,6 +22,7 @@ final class CoreController extends GetxController {
         licenca(value['licenca']);
       }
     });
+    // await Workmanager().cancelAll();
     // licenca.listen((value) async {
     //   if (value == false) {
     //     await Workmanager().cancelByTag('1');
@@ -87,40 +88,31 @@ final class CoreController extends GetxController {
   }
 
   Future<void> _registerOneOffTask() async {
-    _config.listen((value) async {
-      await Workmanager().registerOneOffTask(
-        "task1",
-        "OneOffTask",
-        tag: "1",
-        existingWorkPolicy: ExistingWorkPolicy.replace,
-        initialDelay: const Duration(seconds: 3),
-        constraints: Constraints(networkType: NetworkType.connected),
-        backoffPolicy: BackoffPolicy.linear,
-        backoffPolicyDelay: const Duration(seconds: 10),
-        inputData: _config.value,
-      );
-    });
+    await Workmanager().registerOneOffTask(
+      "task1",
+      "OneOffTask",
+      tag: "1",
+      existingWorkPolicy: ExistingWorkPolicy.replace,
+      initialDelay: const Duration(seconds: 3),
+      constraints: Constraints(networkType: NetworkType.connected),
+      backoffPolicy: BackoffPolicy.linear,
+      backoffPolicyDelay: const Duration(seconds: 10),
+      inputData: _config.value,
+    );
   }
 
   Future<void> _registerPeriodicTask() async {
-    _config.listen((value) async {
-      Logger().i('Inicio do registro $value');
-      if (value!['licenca'] == true) {
-        await Workmanager().registerPeriodicTask(
-          "task2",
-          "PeriodicTask",
-          tag: "2",
-          frequency: const Duration(minutes: 15),
-          existingWorkPolicy: ExistingWorkPolicy.replace,
-          initialDelay: const Duration(seconds: 3),
-          constraints: Constraints(networkType: NetworkType.connected),
-          backoffPolicy: BackoffPolicy.linear,
-          backoffPolicyDelay: const Duration(seconds: 10),
-          inputData: _config.value,
-        );
-      } else {
-        await Workmanager().cancelByTag('2');
-      }
-    });
+    await Workmanager().registerPeriodicTask(
+      "task2",
+      "PeriodicTask",
+      tag: "2",
+      frequency: const Duration(minutes: 15),
+      existingWorkPolicy: ExistingWorkPolicy.replace,
+      initialDelay: const Duration(seconds: 3),
+      constraints: Constraints(networkType: NetworkType.connected),
+      backoffPolicy: BackoffPolicy.linear,
+      backoffPolicyDelay: const Duration(seconds: 10),
+      inputData: _config.value,
+    );
   }
 }

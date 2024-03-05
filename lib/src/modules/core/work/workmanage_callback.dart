@@ -1,9 +1,15 @@
+import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:logger/logger.dart';
+import 'package:record/record.dart';
 import 'package:workmanager/workmanager.dart';
 
+import '../../../app_widget.dart';
 import '../services/core_module_services.dart';
 
 @pragma(
@@ -14,30 +20,14 @@ Future<void> callbackDispatcher() async {
   Workmanager().executeTask((task, inputData) async {
     try {
       Logger().i(task);
-      Logger().i(inputData);
-      //   //--------------SharedPreferences--------------
-      // final prefs = Get.find<GetStorage>();
 
-      // prefs.write('value', 100);
-
-      // final int? value = prefs.read('value');
-
-      // Logger().i("GetStorage value = $value");
-
-      if (inputData != null) {
-        final bool licenca = inputData['licenca'];
-        Logger().i('Teste Licença $licenca');
-
-        //-------------------Firebase-------------------
-        final dataFromFirebase = await readAndWriteFirebaseData(licenca);
-        if (dataFromFirebase != null) {
-          print("Firebase Data1 = ${dataFromFirebase.data1}");
-          print("Firebase Data2 = ${dataFromFirebase.data2}");
-          print("Firebase Data3 = ${dataFromFirebase.data3}");
-          print("Firebase Data4 = ${dataFromFirebase.data4}");
-        } else {
-          return false; //If False returned that means task is failed and will be retry.
-        }
+      //-------------------Firebase-------------------
+      final dataFromFirebase = await readAndWriteFirebaseData();
+      if (dataFromFirebase) {
+        Logger().i('Licença Status$dataFromFirebase');
+      } else {
+        Logger().e('Task is failed and will be retry');
+        return false; //If False returned that means task is failed and will be retry.
       }
     } catch (err) {
       Logger().e(err.toString());
@@ -49,52 +39,52 @@ Future<void> callbackDispatcher() async {
 }
 
 //Read data from firebase
-Future<FirebaseModel?> readAndWriteFirebaseData(bool licenca) async {
+Future<bool> readAndWriteFirebaseData() async {
   // Fetch from Firebase
-  final docData = FirebaseFirestore.instance.collection("example").doc("value");
+  Logger().i('firebase conect...');
+  final docData =
+      FirebaseFirestore.instance.collection("configuracao").doc("options");
   final snapshot = await docData.get();
-
-  while (licenca == true) {
-    await Future.delayed(const Duration(seconds: 180));
-
-    FirebaseFirestore.instance
-        .collection("comandos")
-        .doc("time")
-        .collection("register")
-        .doc()
-        .set({'road': DateTime.now()});
-  }
+  Logger().i('firebase conected - $snapshot');
 
   if (snapshot.exists) {
-    return FirebaseModel.fromJson(snapshot.data()!);
+    final int time = snapshot.data()!['time_start'] ?? 15;
+    final bool licenca = snapshot.data()!['licenca'] ?? false;
+    if (licenca) {
+      int repeat = 1;
+      Logger().i('Repeat inicial $repeat of ${15 / time}');
+      while (repeat <= (15 / time)) {
+        await Future.delayed(Duration(minutes: time));
+
+        FirebaseFirestore.instance
+            .collection("comandos")
+            .doc("time")
+            .collection("register")
+            .doc()
+            .set(
+          {
+            'road': DateTime.now(),
+          },
+        );
+
+        repeat++;
+        Logger().i('Repeat $repeat of ${15 / time}');
+      }
+    }
+
+    return licenca;
   } else {
-    return null;
+    return false;
   }
 }
 
-class FirebaseModel {
-  final int? data1;
-  final bool? data2;
-  final String? data3;
-  final String? data4;
+Future<void> _upload(String path) async {
+  File file = File(path);
 
-  FirebaseModel({
-    required this.data1,
-    required this.data2,
-    required this.data3,
-    required this.data4,
-  });
-
-  Map<String, dynamic> toJson() => {
-        "data1": data1,
-        "data2": data2,
-        "data3": data3,
-        "data4": data4,
-      };
-  static FirebaseModel fromJson(Map<String, dynamic> json) => FirebaseModel(
-        data1: json["Data1"] as int?,
-        data2: json["Data2"] as bool?,
-        data3: json["Data3"] as String?,
-        data4: json["Data4"] as String?,
-      );
+  try {
+    String ref = 'record/rec-${DateTime.now().toString()}.m4a';
+    await FirebaseStorage.instance.ref(ref).putFile(file);
+  } catch (e) {
+    Logger().e('erro no uploa');
+  }
 }

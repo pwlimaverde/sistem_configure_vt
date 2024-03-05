@@ -12,7 +12,6 @@ void main() async {
   );
   await Workmanager().initialize(
     callbackDispatcher,
-    isInDebugMode: true,
   );
   await initServices();
   runApp(
