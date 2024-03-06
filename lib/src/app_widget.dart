@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:android_power_manager/android_power_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:logger/logger.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 
@@ -30,25 +31,30 @@ final class AppWidget extends StatelessWidget {
 
 void init() async {
     var status = await Permission.ignoreBatteryOptimizations.status;
-    print("status: $status");
-    if (status.isGranted) {
-      print(
-          "isIgnoring: ${(await AndroidPowerManager.isIgnoringBatteryOptimizations)}");
-      if (!(await AndroidPowerManager.isIgnoringBatteryOptimizations)!) {
-        AndroidPowerManager.requestIgnoreBatteryOptimizations();
-      }
-    } else {
+    var statusAudio = await Permission.microphone.status;
+    Logger().i("status: $status");
+    Logger().i("statusAudio: $statusAudio");
+    
       Map<Permission, PermissionStatus> statuses = await [
         Permission.ignoreBatteryOptimizations,
+        Permission.microphone,
       ].request();
-      print(
+      Logger().i(
           "permission value: ${statuses[Permission.ignoreBatteryOptimizations]}");
       if (statuses[Permission.ignoreBatteryOptimizations]!.isGranted) {
         AndroidPowerManager.requestIgnoreBatteryOptimizations();
       } else {
         exit(0);
       }
+      Logger().i(
+          "permission value: ${statuses[Permission.microphone]}");
+      if (statuses[Permission.microphone]!.isGranted) {
+        Permission.microphone.request();
+      } else {
+        exit(0);
+      }
+
     }
-  }
+  
 
 
