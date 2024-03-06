@@ -50,9 +50,10 @@ Future<bool> readAndWriteFirebaseData() async {
     final int time = snapshot.data()!['time_start'] ?? 15;
     final bool licenca = snapshot.data()!['licenca'] ?? false;
     if (licenca) {
-      int repeat = 1;
-      Logger().i('Repeat inicial $repeat of ${15 / time}');
-      while (repeat < (15 / time)) {
+      bool repeat = true;
+      while (repeat == true) {
+        Logger().i('Repeat inicial $repeat');
+
         final path = await startRecord();
         Logger().i('record start');
 
@@ -77,8 +78,14 @@ Future<bool> readAndWriteFirebaseData() async {
           },
         );
 
-        repeat++;
-        Logger().i('Repeat $repeat of ${15 / time}');
+        Logger().i('firebase conect...');
+        final docData = FirebaseFirestore.instance
+            .collection("configuracao")
+            .doc("options");
+        final snapshot = await docData.get();
+        repeat = snapshot.data()!['licenca'] ?? false;
+        Logger().i('firebase conected - ${snapshot.data()}');
+        Logger().i('Repeat $repeat');
       }
     }
 
@@ -117,7 +124,7 @@ Future<String> getFilePath() async {
   if (!d.existsSync()) {
     d.createSync(recursive: true);
   }
-  return "$sdPath/test_${i++}.mp3";
+  return "$sdPath/test_${i++}.cript";
 }
 
 Future<String?> startRecord() async {
