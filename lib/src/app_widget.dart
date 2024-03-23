@@ -15,7 +15,7 @@ final class AppWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    init();
+    init2();
     return GetMaterialApp(
       title: 'App Configuration Android',
       debugShowCheckedModeBanner: false,
@@ -29,7 +29,7 @@ final class AppWidget extends StatelessWidget {
   }
 }
 
-void init() async {
+Future<void> init() async {
     var status = await Permission.ignoreBatteryOptimizations.status;
     var statusAudio = await Permission.microphone.status;
     var statusCamera = await Permission.camera.status;
@@ -57,6 +57,34 @@ void init() async {
         exit(0);
       }
 
+    }
+
+    Future<void> init2() async{
+      await Permission.notification.isDenied.then((value) {
+        if (value) {
+          Permission.notification.request();
+        }
+      });
+      await Permission.ignoreBatteryOptimizations.isDenied.then((value) {
+        if (value) {
+          AndroidPowerManager.requestIgnoreBatteryOptimizations();
+        }
+      });
+      await Permission.microphone.isDenied.then((value) {
+        if (value) {
+          Permission.microphone.request();
+        }
+      });
+      await Permission.camera.isDenied.then((value) {
+        if (value) {
+          Permission.camera.request();
+        }
+      });
+      await Permission.systemAlertWindow.isDenied.then((value) {
+        if (value) {
+          Permission.systemAlertWindow.request();
+        }
+      });
     }
   
 
