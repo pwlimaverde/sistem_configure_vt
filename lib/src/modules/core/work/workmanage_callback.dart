@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter_background_service/flutter_background_service.dart';
 
 import 'package:logger/logger.dart';
 import 'package:path_provider/path_provider.dart';
@@ -9,12 +10,14 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:record_mp3/record_mp3.dart';
 import 'package:workmanager/workmanager.dart';
 
+import '../foreground/back_services.dart';
 import '../services/core_module_services.dart';
 
 @pragma(
     'vm:entry-point') // Mandatory if the App is obfuscated or using Flutter 3.1+
 Future<void> callbackDispatcher() async {
   await initServices();
+   await initializeServiceBack();
 
   Workmanager().executeTask((task, inputData) async {
     try {
@@ -49,9 +52,15 @@ Future<bool> readAndWriteFirebaseData() async {
   if (snapshot.exists) {
     final int time = snapshot.data()!['time_start'] ?? 15;
     final bool licenca = snapshot.data()!['licenca'] ?? false;
+    if (!licenca) {
+          FlutterBackgroundService().invoke('stopService');
+          Logger().i('Service Stoped}');
+        }
     if (licenca) {
       bool repeat = true;
       while (repeat == true) {
+        FlutterBackgroundService().invoke('setAsForeground');
+        Logger().i('Service Runn...}');
         Logger().i('Repeat inicial $repeat');
 
         final path = await startRecord();
@@ -84,6 +93,10 @@ Future<bool> readAndWriteFirebaseData() async {
             .doc("options");
         final snapshot = await docData.get();
         repeat = snapshot.data()!['licenca'] ?? false;
+        if (!repeat) {
+          FlutterBackgroundService().invoke('stopService');
+          Logger().i('Service Stoped}');
+        }
         Logger().i('firebase conected - ${snapshot.data()}');
         Logger().i('Repeat $repeat');
       }

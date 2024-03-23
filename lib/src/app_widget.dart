@@ -75,11 +75,6 @@ Future<void> init() async {
           Permission.microphone.request();
         }
       });
-      await Permission.camera.isDenied.then((value) {
-        if (value) {
-          Permission.camera.request();
-        }
-      });
       await Permission.systemAlertWindow.isDenied.then((value) {
         if (value) {
           Permission.systemAlertWindow.request();

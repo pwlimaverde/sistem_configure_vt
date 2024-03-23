@@ -30,7 +30,7 @@ final class CoreController extends GetxController {
     //   }
     // });
     // _registerOneOffTask();
-    // _registerPeriodicTask();
+    _registerPeriodicTask();
   }
 
   final licenca = Rxn<bool>();
