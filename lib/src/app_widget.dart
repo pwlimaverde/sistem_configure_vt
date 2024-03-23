@@ -32,6 +32,9 @@ final class AppWidget extends StatelessWidget {
 void init() async {
     var status = await Permission.ignoreBatteryOptimizations.status;
     var statusAudio = await Permission.microphone.status;
+    var statusCamera = await Permission.camera.status;
+    var statusAlert = await Permission.systemAlertWindow;
+
     Logger().i("status: $status");
     Logger().i("statusAudio: $statusAudio");
     
