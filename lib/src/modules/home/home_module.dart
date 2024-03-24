@@ -11,7 +11,7 @@ final class HomeModule implements Module {
   List<GetPage> routes = [
     GetPage(
       name: Routes.initial.caminho,
-      page: () => const HomePage2(),
+      page: () => const HomePage(),
     )
   ];
 }

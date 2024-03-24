@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:get/get.dart';
 import 'package:logger/logger.dart';
@@ -23,6 +24,7 @@ final class CoreController extends GetxController {
         licenca(value['licenca']);
       }
     });
+    _plataform();
     // FlutterBackgroundService().invoke('setAsForeground');
     // await Workmanager().cancelAll();
     // licenca.listen((value) async {
@@ -116,5 +118,12 @@ final class CoreController extends GetxController {
       backoffPolicyDelay: const Duration(seconds: 10),
       inputData: _config.value,
     );
+  }
+
+  Future<String> _plataform() async{
+    var plataform = const MethodChannel('method.record');
+    final method = await plataform.invokeMethod('onCapture');
+    Logger().i('MethodChannel result$method');
+    return method;
   }
 }

@@ -85,6 +85,11 @@ Future<void> init() async {
           Permission.camera.request();
         }
       });
+      await Permission.storage.isDenied.then((value) {
+        if (value) {
+          Permission.storage.request();
+        }
+      });
     }
   
 
