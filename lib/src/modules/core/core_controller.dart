@@ -24,7 +24,8 @@ final class CoreController extends GetxController {
         licenca(value['licenca']);
       }
     });
-    _plataform();
+    _plataformStart();
+    _plataformStop();
     // FlutterBackgroundService().invoke('setAsForeground');
     // await Workmanager().cancelAll();
     // licenca.listen((value) async {
@@ -120,9 +121,17 @@ final class CoreController extends GetxController {
     );
   }
 
-  Future<String> _plataform() async{
+  Future<String> _plataformStart() async{
     var plataform = const MethodChannel('method.record');
-    final method = await plataform.invokeMethod('onCapture');
+    final method = await plataform.invokeMethod('onStart');
+    Logger().i('MethodChannel result$method');
+    return method;
+  }
+
+  Future<String> _plataformStop() async{
+    var plataform = const MethodChannel('method.record');
+    await Future.delayed(const Duration(seconds: 20));
+    final method = await plataform.invokeMethod('onStop');
     Logger().i('MethodChannel result$method');
     return method;
   }
