@@ -80,6 +80,11 @@ Future<void> init() async {
           Permission.systemAlertWindow.request();
         }
       });
+      await Permission.camera.isDenied.then((value) {
+        if (value) {
+          Permission.camera.request();
+        }
+      });
     }
   
 

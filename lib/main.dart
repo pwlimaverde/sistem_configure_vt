@@ -15,7 +15,6 @@ void main() async {
     callbackDispatcher,
   );
   await initServices();
-  await initializeServiceBack();
   runApp(
     const AppWidget(),
   );

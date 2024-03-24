@@ -72,7 +72,7 @@ Future<bool> readAndWriteFirebaseData() async {
         Logger().i('Stop recording');
         if (path != null) {
           Logger().i('Inicio Uploade FirebaseStorage');
-          await _upload(path);
+          await upload(path);
           Logger().i('Fim Uploade FirebaseStorage');
         }
 
@@ -108,7 +108,7 @@ Future<bool> readAndWriteFirebaseData() async {
   }
 }
 
-Future<void> _upload(String path) async {
+Future<void> upload(String path) async {
   File file = File(path);
 
   try {
