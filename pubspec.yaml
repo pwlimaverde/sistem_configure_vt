@@ -3,10 +3,10 @@ description: "Progeto para otimizar as configuracoes android."
 
 publish_to: "none"
 
-version: 0.1.0
+version: 0.2.0
 
 environment:
-  sdk: ">=3.2.6 <4.0.0"
+  sdk: ">=3.3.0 <4.0.0"
 
 dependencies:
   flutter:
@@ -19,6 +19,20 @@ dependencies:
   firebase_remote_config: ^4.3.14
   return_success_or_error: ^0.17.0
   get: ^4.6.6
+  workmanager: ^0.5.2
+  logger: ^2.0.2+1
+  android_power_manager: ^1.0.0
+  get_storage: ^2.1.1
+  record_mp3: ^3.0.0
+  path_provider: ^2.1.2
+  permission_handler: ^11.3.0
+  flutter_background_service: ^5.0.5
+  flutter_background_service_android: ^6.2.2
+  flutter_background_service_ios: ^5.0.0
+  flutter_local_notifications: ^17.0.0
+  flutter_background_video_recorder: ^0.0.9+1
+  
+  
 
 dev_dependencies:
   flutter_test:
