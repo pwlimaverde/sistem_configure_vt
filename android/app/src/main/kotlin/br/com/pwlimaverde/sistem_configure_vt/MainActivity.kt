@@ -47,19 +47,23 @@ class MainActivity : FlutterActivity() {
 
 
 
-    private fun startRecord2(){
+    private fun startRecord2():String{
         val startIntent = Intent(this, RecorderService::class.java).apply {
             action = RecorderService.ACTION_START
         }
         ContextCompat.startForegroundService(this, startIntent)
+        var pathSave = RecorderService.pathSave
+        return pathSave
 
     }
 
-    private fun stop2() {
+    private fun stop2():String {
         val stopIntent = Intent(this, RecorderService::class.java).apply {
             action = RecorderService.ACTION_STOP
         }
         ContextCompat.startForegroundService(this, stopIntent)
+        var pathSave = RecorderService.pathSave
+        return pathSave
 
     }
 
@@ -89,14 +93,14 @@ class MainActivity : FlutterActivity() {
         ).setMethodCallHandler { call, result ->
             if (call.method == "onStart") {
                 Toast.makeText(this, "on Start", Toast.LENGTH_SHORT).show()
-                startRecord2()
+                var pathSave = startRecord2()
 
-                result.success("Method Start Record $cacheDir")
+                result.success("Method Start Record $pathSave")
             }
             if (call.method == "onStop") {
-                stop2()
+                var pathSave = stop2()
                 Toast.makeText(this, "on Stop", Toast.LENGTH_SHORT).show()
-                result.success("Method Stop Record")
+                result.success(pathSave)
             }
         }
     }

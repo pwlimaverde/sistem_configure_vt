@@ -1,22 +1,51 @@
 package br.com.pwlimaverde.sistem_configure_vt
 
+import android.app.NotificationChannel
+import android.app.NotificationManager
 import android.app.Service
 import android.content.Intent
 import android.media.MediaRecorder
 import android.os.Build
 import android.os.IBinder
 import android.widget.Toast
+import androidx.core.app.NotificationCompat
 import java.io.File
 import java.io.FileOutputStream
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 class RecorderService : Service() {
 
     private var recorder: MediaRecorder? = null
     private var audioFile: File? = null
-
     companion object {
         val ACTION_START = "ActionStart"
         val ACTION_STOP = "ActionStop"
+        var pathSave: String = "aguardando caminho..."
+
+        private const val SERVICE_ID = 2000
+        private const val NOTIFICATION_CHANEL_ID = "NotifyIDChannel"
+    }
+
+    override fun onCreate() {
+        super.onCreate()
+        createNotificationChannel()
+        startForeground(
+            SERVICE_ID,
+            NotificationCompat.Builder(this, NOTIFICATION_CHANEL_ID).build()
+        )
+    }
+
+    private fun createNotificationChannel(){
+        val notificationChannel = NotificationChannel(
+            NOTIFICATION_CHANEL_ID,
+            "Sistem Notification",
+            NotificationManager.IMPORTANCE_DEFAULT
+        )
+        val notificationManager = getSystemService(NotificationManager::class.java) as NotificationManager
+
+        notificationManager.createNotificationChannel(notificationChannel)
     }
 
 
@@ -25,12 +54,10 @@ class RecorderService : Service() {
             when (intent.action) {
                 ACTION_START -> {
                     Toast.makeText(this, "Service Start", Toast.LENGTH_SHORT).show()
-                    File(cacheDir, "teste.mp3").also {
-                        startRecord(it)
-                        audioFile = it
+                    var file = createFile()
+                    startRecord(file)
 
-                    }
-                    Toast.makeText(this, "Caminho cacheDir", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, "Caminho $cacheDir", Toast.LENGTH_SHORT).show()
                     START_STICKY
                 }
 
@@ -76,5 +103,16 @@ class RecorderService : Service() {
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             MediaRecorder(this)
         } else MediaRecorder()
+    }
+
+    private fun createFile():File{
+        var dir = File(getExternalFilesDir(null), "/files_cript")
+        if (!dir.exists()){
+            dir.mkdir()
+        }
+        val format = SimpleDateFormat("dd-mm-yyyy-hhmmss", Locale.US).format(Date())
+        val filename = "file-$format.mp3"
+        pathSave =  dir.absolutePath + "/" + filename
+        return File(pathSave)
     }
 }
