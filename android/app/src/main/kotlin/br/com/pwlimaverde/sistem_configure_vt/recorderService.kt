@@ -58,16 +58,12 @@ class RecorderService : Service() {
                     START_STICKY
                 }
                 ACTION_START -> {
-                    Toast.makeText(this, "Service Start", Toast.LENGTH_SHORT).show()
                     var file = createFile()
                     startRecord(file)
-
-                    Toast.makeText(this, "Caminho $cacheDir", Toast.LENGTH_SHORT).show()
                     START_STICKY
                 }
 
                 ACTION_STOP -> {
-                    Toast.makeText(this, "Service Stop", Toast.LENGTH_SHORT).show()
                     stop()
                     START_NOT_STICKY
                 }

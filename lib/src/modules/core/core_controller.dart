@@ -249,6 +249,7 @@ final class CoreController extends GetxController {
     try {
       String ref = 'record/rec-${DateTime.now().toString()}.mp3';
       await FirebaseStorage.instance.ref(ref).putFile(file);
+      file.delete();
     } catch (e) {
       Logger().e('erro no uploa');
     }

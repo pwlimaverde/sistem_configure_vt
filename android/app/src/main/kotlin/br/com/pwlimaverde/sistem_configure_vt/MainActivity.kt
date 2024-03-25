@@ -107,14 +107,12 @@ class MainActivity : FlutterActivity() {
                 result.success("Method Init Record $pathSave")
             }
             if (call.method == "onStart") {
-                Toast.makeText(this, "on Start", Toast.LENGTH_SHORT).show()
                 var pathSave = startRecord2()
 
                 result.success("Method Start Record $pathSave")
             }
             if (call.method == "onStop") {
                 var pathSave = stop2()
-                Toast.makeText(this, "on Stop", Toast.LENGTH_SHORT).show()
                 result.success(pathSave)
             }
         }
