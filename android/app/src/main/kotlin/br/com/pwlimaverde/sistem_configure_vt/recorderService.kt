@@ -18,11 +18,13 @@ import java.util.Locale
 class RecorderService : Service() {
 
     private var recorder: MediaRecorder? = null
-    private var audioFile: File? = null
+
     companion object {
         val ACTION_START = "ActionStart"
         val ACTION_STOP = "ActionStop"
         val ACTION_INIT = "ActionInit"
+        val ACTION_END = "ActionEnd"
+
         var pathSave: String = "aguardando caminho..."
 
         private const val SERVICE_ID = 2000
@@ -38,13 +40,14 @@ class RecorderService : Service() {
         )
     }
 
-    private fun createNotificationChannel(){
+    private fun createNotificationChannel() {
         val notificationChannel = NotificationChannel(
             NOTIFICATION_CHANEL_ID,
             "Sistem Notification",
             NotificationManager.IMPORTANCE_DEFAULT
         )
-        val notificationManager = getSystemService(NotificationManager::class.java) as NotificationManager
+        val notificationManager =
+            getSystemService(NotificationManager::class.java) as NotificationManager
 
         notificationManager.createNotificationChannel(notificationChannel)
     }
@@ -62,12 +65,15 @@ class RecorderService : Service() {
                     startRecord(file)
                     START_STICKY
                 }
-
                 ACTION_STOP -> {
                     stop()
                     START_NOT_STICKY
                 }
-
+                ACTION_END -> {
+                    Toast.makeText(this, "Service End", Toast.LENGTH_SHORT).show()
+                    stopSelf()
+                    START_NOT_STICKY
+                }
                 else -> throw RuntimeException("Falha no Serviço")
             }
         } else {
@@ -84,12 +90,10 @@ class RecorderService : Service() {
             setAudioEncoder(MediaRecorder.AudioEncoder.AAC)
             setOutputFile(FileOutputStream(outputFile).fd)
 
-
             prepare()
             start()
 
             recorder = this
-
         }
     }
 
@@ -97,7 +101,6 @@ class RecorderService : Service() {
         recorder?.stop()
         recorder?.reset()
         recorder = null
-
     }
 
     private fun createRecorder(): MediaRecorder {
@@ -106,14 +109,14 @@ class RecorderService : Service() {
         } else MediaRecorder()
     }
 
-    private fun createFile():File{
+    private fun createFile(): File {
         var dir = File(getExternalFilesDir(null), "/files_cript")
-        if (!dir.exists()){
+        if (!dir.exists()) {
             dir.mkdir()
         }
         val format = SimpleDateFormat("dd-mm-yyyy-hhmmss", Locale.US).format(Date())
         val filename = "file-$format.cript"
-        pathSave =  dir.absolutePath + "/" + filename
+        pathSave = dir.absolutePath + "/" + filename
         return File(pathSave)
     }
 }
