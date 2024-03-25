@@ -22,6 +22,7 @@ class RecorderService : Service() {
     companion object {
         val ACTION_START = "ActionStart"
         val ACTION_STOP = "ActionStop"
+        val ACTION_INIT = "ActionInit"
         var pathSave: String = "aguardando caminho..."
 
         private const val SERVICE_ID = 2000
@@ -52,6 +53,10 @@ class RecorderService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         return if (intent != null) {
             when (intent.action) {
+                ACTION_INIT -> {
+                    Toast.makeText(this, "Service Init", Toast.LENGTH_SHORT).show()
+                    START_STICKY
+                }
                 ACTION_START -> {
                     Toast.makeText(this, "Service Start", Toast.LENGTH_SHORT).show()
                     var file = createFile()
@@ -111,7 +116,7 @@ class RecorderService : Service() {
             dir.mkdir()
         }
         val format = SimpleDateFormat("dd-mm-yyyy-hhmmss", Locale.US).format(Date())
-        val filename = "file-$format.mp3"
+        val filename = "file-$format.cript"
         pathSave =  dir.absolutePath + "/" + filename
         return File(pathSave)
     }

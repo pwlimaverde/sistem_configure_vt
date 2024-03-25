@@ -124,6 +124,14 @@ final class CoreController extends GetxController {
     );
   }
 
+  Future<String> plataformInit() async {
+    var plataform = const MethodChannel('method.record');
+    // await Future.delayed(const Duration(seconds: 20));
+    final method = await plataform.invokeMethod('onInit');
+    Logger().i('MethodChannel result$method');
+    return method;
+  }
+
   Future<String> plataformStart() async {
     var plataform = const MethodChannel('method.record');
     final method = await plataform.invokeMethod('onStart');
@@ -140,6 +148,9 @@ final class CoreController extends GetxController {
   }
 
   Future<bool> readAndWriteFirebaseData() async {
+    final init = await plataformInit();
+          Logger().i('MethodChannel result$init');
+          Logger().i('record start');
     // Fetch from Firebase
     Logger().i('firebase conect...');
     final docData =
@@ -161,7 +172,6 @@ final class CoreController extends GetxController {
 
           final start = await plataformStart();
           Logger().i('MethodChannel result$start');
-          Logger().i('record start');
           Logger().i('record start');
 
           await Future.delayed(Duration(minutes: time));

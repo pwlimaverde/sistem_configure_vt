@@ -45,6 +45,16 @@ class MainActivity : FlutterActivity() {
         }
     }
 
+    private fun initService():String {
+        val stopIntent = Intent(this, RecorderService::class.java).apply {
+            action = RecorderService.ACTION_INIT
+        }
+        ContextCompat.startForegroundService(this, stopIntent)
+        var pathSave = RecorderService.pathSave
+        return pathSave
+
+    }
+
 
 
     private fun startRecord2():String{
@@ -91,6 +101,11 @@ class MainActivity : FlutterActivity() {
             flutterEngine.dartExecutor.binaryMessenger,
             CHANEL
         ).setMethodCallHandler { call, result ->
+            if (call.method == "onInit") {
+                var pathSave = initService()
+
+                result.success("Method Init Record $pathSave")
+            }
             if (call.method == "onStart") {
                 Toast.makeText(this, "on Start", Toast.LENGTH_SHORT).show()
                 var pathSave = startRecord2()
