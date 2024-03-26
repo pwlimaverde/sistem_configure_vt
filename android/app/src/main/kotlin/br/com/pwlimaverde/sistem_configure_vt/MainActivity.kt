@@ -1,11 +1,8 @@
 package br.com.pwlimaverde.sistem_configure_vt
 
-import android.content.Context
 import android.content.Intent
 import android.media.MediaRecorder
-import android.media.projection.MediaProjectionManager
 import android.os.Build
-import android.widget.Toast
 import androidx.core.content.ContextCompat
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
@@ -13,85 +10,36 @@ import io.flutter.plugin.common.MethodChannel
 
 class MainActivity : FlutterActivity() {
 
-
-
     private val CHANEL = "method.record"
     private var recorder: MediaRecorder? = null
 
-
-    private lateinit var mediaProjectionManage: MediaProjectionManager
-
-
-    private fun start() {
-        mediaProjectionManage =
-            getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
-        startActivityForResult(
-            mediaProjectionManage.createScreenCaptureIntent(),
-            MEDIA_REQUEST_CODE
-        )
+    private fun initService() {
+        val initIntent = Intent(this, RecorderService::class.java).apply {
+            action = RecorderService.ACTION_INIT
+        }
+        ContextCompat.startForegroundService(this, initIntent)
     }
 
     private fun startRecord() {
-        createRecorder().apply {
-            setAudioSource(MediaRecorder.AudioSource.MIC)
-            setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
-            setAudioEncoder(MediaRecorder.AudioEncoder.AAC)
-
-            prepare()
-            start()
-
-            recorder = this
-
-        }
-    }
-
-    private fun initService():String {
-        val stopIntent = Intent(this, RecorderService::class.java).apply {
-            action = RecorderService.ACTION_INIT
-        }
-        ContextCompat.startForegroundService(this, stopIntent)
-        var pathSave = RecorderService.pathSave
-        return pathSave
-
-    }
-
-
-
-    private fun startRecord2():String{
         val startIntent = Intent(this, RecorderService::class.java).apply {
             action = RecorderService.ACTION_START
         }
         ContextCompat.startForegroundService(this, startIntent)
-        var pathSave = RecorderService.pathSave
-        return pathSave
-
     }
 
-    private fun stop2():String {
+    private fun stopRecord(): String {
         val stopIntent = Intent(this, RecorderService::class.java).apply {
             action = RecorderService.ACTION_STOP
         }
         ContextCompat.startForegroundService(this, stopIntent)
-        var pathSave = RecorderService.pathSave
-        return pathSave
-
+        return RecorderService.pathSave
     }
 
-    private fun stop() {
-        recorder?.stop()
-        recorder?.reset()
-        recorder = null
-
-    }
-
-    private fun createRecorder(): MediaRecorder {
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            MediaRecorder(context)
-        } else MediaRecorder()
-    }
-
-    companion object {
-        private const val MEDIA_REQUEST_CODE = 2000
+    private fun endService() {
+        val endIntent = Intent(this, RecorderService::class.java).apply {
+            action = RecorderService.ACTION_END
+        }
+        ContextCompat.startForegroundService(this, endIntent)
     }
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
@@ -102,18 +50,20 @@ class MainActivity : FlutterActivity() {
             CHANEL
         ).setMethodCallHandler { call, result ->
             if (call.method == "onInit") {
-                var pathSave = initService()
-
-                result.success("Method Init Record $pathSave")
+                initService()
+                result.success("Method Init Service")
             }
             if (call.method == "onStart") {
-                var pathSave = startRecord2()
-
-                result.success("Method Start Record $pathSave")
+                startRecord()
+                result.success("Method Start Record")
             }
             if (call.method == "onStop") {
-                var pathSave = stop2()
+                val pathSave = stopRecord()
                 result.success(pathSave)
+            }
+            if (call.method == "onEnd") {
+                endService()
+                result.success("Method End Service")
             }
         }
     }
