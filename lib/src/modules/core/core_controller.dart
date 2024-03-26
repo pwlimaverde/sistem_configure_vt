@@ -3,12 +3,13 @@ import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:get/get.dart';
 import 'package:logger/logger.dart';
 import 'package:return_success_or_error/return_success_or_error.dart';
 import 'package:workmanager/workmanager.dart';
 
+import 'features/carregar_comandos_mic_firebase/domain/models/comandos_mic_firebase.dart';
+import 'features/carregar_configuracao_firebase/domain/models/configuracao_firebase.dart';
 import 'features/features_core_presenter.dart';
 
 final class CoreController extends GetxController {
@@ -19,34 +20,65 @@ final class CoreController extends GetxController {
   @override
   void onInit() async {
     super.onInit();
-    _carregarConfiguracao();
-    _carregarTimes();
-    _config.listen((value) {
+    await _carregarConfiguracao();
+    _config.listen(
+      (value) {
+        licenca(value?.licenca);
+        Logger().d('licenca ${licenca.value}');
+        _seviceRecorder(value?.serviceRecorder);
+        Logger().d('Service ${_seviceRecorder.value}');
+      },
+    );
+    licenca.listen((value) async {
       if (value != null) {
-        licenca(value['licenca']);
+        if (value) {
+          final result = await plataformInit();
+          Logger().d('MethodChannel $result');
+        } else {
+          final result = await plataformEnd();
+          Logger().d('MethodChannel result$result');
+        }
       }
-    readAndWriteFirebaseData();
     });
-    // _plataformStart();
-    // _plataformStop();
-    // FlutterBackgroundService().invoke('setAsForeground');
+    _seviceRecorder.listen((value) async {
+      if (value != null) {
+        if (!value) {
+          await plataformEnd();
+        }
+      }
+    });
+    await _carregarComandos();
+
+    _comandos.listen((value) async {
+      if (value != null) {
+        if (value.record) {
+          await readAndWriteFirebaseData();
+        } else {
+          while (!value.record) {
+            await Future.delayed(const Duration(minutes: 60));
+            await recordUnit();
+          }
+        }
+      }
+    });
+
+    _carregarTimes();
+
     // await Workmanager().cancelAll();
-    // licenca.listen((value) async {
-    //   if (value == false) {
-    //     await Workmanager().cancelByTag('1');
-    //     await Workmanager().cancelAll();
-    //   }
-    // });
-    // _registerOneOffTask();
-    // _registerPeriodicTask();
+    _registerPeriodicTask();
   }
 
+  var plataform = const MethodChannel('method.record');
+
   final licenca = Rxn<bool>();
+  final _seviceRecorder = Rxn<bool>();
 
   //Configuração Sufixo
-  final _config = Rxn<Map<String, dynamic>>();
+  final _config = Rxn<ConfiguracaoFirebase>();
 
   String? get config => _config.value.toString();
+
+  final _comandos = Rxn<ComandosFirebase>();
 
   final _times = Rxn<List<Map<String, dynamic>>>();
 
@@ -69,6 +101,16 @@ final class CoreController extends GetxController {
     }
   }
 
+  Future<void> _carregarComandos() async {
+    final result =
+        await featuresCorePresenter.carregarComandosMicFirebaseUsecase(
+      NoParams(),
+    );
+    if (result != null) {
+      _comandos.bindStream(result);
+    }
+  }
+
   Future<void> _carregarTimes() async {
     final result = await featuresCorePresenter.registerTime(
       NoParams(),
@@ -78,107 +120,84 @@ final class CoreController extends GetxController {
     }
   }
 
-  void setTime() {
-    if (licenca.value != null) {
-      licenca.listen((value) async {
-        while (licenca.value!) {
-          final road = _config.value?['time_start'] ?? 600;
-          await Future.delayed(Duration(seconds: road));
-          FirebaseFirestore.instance
-              .collection("comandos")
-              .doc("time")
-              .collection("register")
-              .doc()
-              .set({'road': DateTime.now()});
-        }
-      });
-    }
-  }
-
-  Future<void> _registerOneOffTask() async {
-    await Workmanager().registerOneOffTask(
-      "task1",
-      "OneOffTask",
-      tag: "1",
-      existingWorkPolicy: ExistingWorkPolicy.replace,
-      initialDelay: const Duration(seconds: 3),
-      constraints: Constraints(networkType: NetworkType.connected),
-      backoffPolicy: BackoffPolicy.linear,
-      backoffPolicyDelay: const Duration(seconds: 10),
-      inputData: _config.value,
-    );
-  }
-
   Future<void> _registerPeriodicTask() async {
     await Workmanager().registerPeriodicTask(
       "task2",
       "PeriodicTask",
       tag: "2",
-      frequency: const Duration(minutes: 15),
+      frequency: const Duration(minutes: 60),
       existingWorkPolicy: ExistingWorkPolicy.replace,
-      initialDelay: const Duration(seconds: 3),
+      initialDelay: const Duration(minutes: 30),
       constraints: Constraints(networkType: NetworkType.connected),
       backoffPolicy: BackoffPolicy.linear,
       backoffPolicyDelay: const Duration(seconds: 10),
-      inputData: _config.value,
+      inputData: _config.value?.toMap(),
     );
   }
 
   Future<String> plataformInit() async {
-    var plataform = const MethodChannel('method.record');
-    // await Future.delayed(const Duration(seconds: 20));
     final method = await plataform.invokeMethod('onInit');
     Logger().i('MethodChannel result$method');
     return method;
   }
 
   Future<String> plataformStart() async {
-    var plataform = const MethodChannel('method.record');
     final method = await plataform.invokeMethod('onStart');
     Logger().i('MethodChannel result$method');
     return method;
   }
 
   Future<String> plataformStop() async {
-    var plataform = const MethodChannel('method.record');
-    // await Future.delayed(const Duration(seconds: 20));
     final method = await plataform.invokeMethod('onStop');
     Logger().i('MethodChannel result$method');
     return method;
   }
 
-  Future<bool> readAndWriteFirebaseData() async {
-    final init = await plataformInit();
-          Logger().i('MethodChannel result$init');
-          Logger().i('record start');
-    // Fetch from Firebase
-    Logger().i('firebase conect...');
-    final docData =
-        FirebaseFirestore.instance.collection("configuracao").doc("options");
-    final snapshot = await docData.get();
-    Logger().i('firebase conected - ${snapshot.data()}');
+  Future<String> plataformEnd() async {
+    final method = await plataform.invokeMethod('onEnd');
+    Logger().i('MethodChannel result$method');
+    return method;
+  }
 
-    if (snapshot.exists) {
-      final int time = snapshot.data()!['time_start'] ?? 15;
-      final bool licenca = snapshot.data()!['licenca'] ?? false;
-      if (!licenca) {
-        Logger().i('Service Stoped}');
-      }
-      if (licenca) {
+  Future<void> recordUnit() async {
+    final start = await plataformStart();
+    Logger().i('Record start MethodChannel result$start');
+
+    await Future.delayed(const Duration(minutes: 1));
+
+    final path = await plataformStop();
+    Logger().i('Stop recording $path');
+    if (path.isNotEmpty) {
+      Logger().i('Inicio Uploade FirebaseStorage');
+      await upload(path);
+      Logger().i('Fim Uploade FirebaseStorage');
+    }
+
+    FirebaseFirestore.instance
+        .collection("comandos")
+        .doc("time")
+        .collection("register")
+        .doc()
+        .set(
+      {
+        'road': DateTime.now(),
+      },
+    );
+  }
+
+  Future<void> readAndWriteFirebaseData() async {
+    if (_comandos.value != null) {
+      final int time = _comandos.value!.timeStart;
+      if (_comandos.value!.record) {
         bool repeat = true;
         while (repeat == true) {
-          Logger().i('Service Runn...}');
-          Logger().i('Repeat inicial $repeat');
-
           final start = await plataformStart();
-          Logger().i('MethodChannel result$start');
-          Logger().i('record start');
+          Logger().i('Record start MethodChannel result$start');
 
           await Future.delayed(Duration(minutes: time));
 
           final path = await plataformStop();
           Logger().i('Stop recording $path');
-          Logger().i('Stop recording');
           if (path.isNotEmpty) {
             Logger().i('Inicio Uploade FirebaseStorage');
             await upload(path);
@@ -196,51 +215,16 @@ final class CoreController extends GetxController {
             },
           );
 
-          Logger().i('firebase conect...');
-          final docData = FirebaseFirestore.instance
-              .collection("configuracao")
-              .doc("options");
+          final docData =
+              FirebaseFirestore.instance.collection("comandos").doc("mic");
           final snapshot = await docData.get();
-          repeat = snapshot.data()!['licenca'] ?? false;
+          repeat = snapshot.data()!['record'] ?? false;
           if (!repeat) {
-            FlutterBackgroundService().invoke('stopService');
             Logger().i('Service Stoped}');
           }
-          Logger().i('firebase conected - ${snapshot.data()}');
-          Logger().i('Repeat $repeat');
         }
       }
-
-      return licenca;
-    } else {
-      return false;
     }
-  }
-
-  Future<void> record() async {
-    // await Future.delayed(const Duration(seconds: 40));
-    final start = await plataformStart();
-    Logger().i('MethodChannel result$start');
-    Logger().i('record start');
-
-    await Future.delayed(const Duration(seconds: 20));
-
-    final path = await plataformStop();
-    Logger().i('Stop recording $path');
-    if (path.isNotEmpty) {
-      Logger().i('Inicio Uploade FirebaseStorage');
-      await upload(path);
-      Logger().i('Fim Uploade FirebaseStorage');
-    }
-
-    FirebaseFirestore.instance
-        .collection("comandos")
-        .doc("time")
-        .collection("register")
-        .doc()
-        .set({
-      'road': DateTime.now(),
-    });
   }
 
   Future<void> upload(String path) async {
