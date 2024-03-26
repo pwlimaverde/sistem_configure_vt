@@ -62,7 +62,7 @@ class MainActivity : FlutterActivity() {
                 result.success(pathSave)
             }
             if (call.method == "onEnd") {
-                initService()
+                endService()
                 result.success("Method End Service")
             }
         }

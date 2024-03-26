@@ -8,36 +8,13 @@ final class HomePage extends GetView<CoreController> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return const Scaffold(
+      backgroundColor: Colors.black,
       body: Center(
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              Obx(
-                () => Text(
-                  controller.config == null
-                      ? "carregando!"
-                      : controller.config.toString(),
-                  style: Theme.of(context).textTheme.headlineMedium,
-                ),
-              ),
-              Obx(
-                () => controller.times != null?SizedBox(
-                  width: 500,
-                  height: 500,
-                  child: ListView.builder(
-                    itemCount: controller.times?.length,
-                    itemBuilder: (BuildContext context, int index) {
-                      return ListTile(
-                        title: Text(controller.times![index]),
-                      );
-                    },
-                  ),
-                ):Container(),
-              ),
-            ],
-          ),
+        child: SizedBox(
+          width: 80,
+          height: 80,
+          child: CircularProgressIndicator(backgroundColor: Colors.white,),
         ),
       ),
     );
