@@ -24,6 +24,7 @@ class RecorderService : Service() {
         val ACTION_STOP = "ActionStop"
         val ACTION_INIT = "ActionInit"
         val ACTION_END = "ActionEnd"
+        val ACTION_RESTART = "ActionRestart"
 
         var pathSave: String = "aguardando caminho..."
 
@@ -39,6 +40,7 @@ class RecorderService : Service() {
             NotificationCompat.Builder(this, NOTIFICATION_CHANEL_ID).build()
         )
     }
+
 
     private fun createNotificationChannel() {
         val notificationChannel = NotificationChannel(
@@ -70,9 +72,12 @@ class RecorderService : Service() {
                     START_NOT_STICKY
                 }
                 ACTION_END -> {
-                    Toast.makeText(this, "Service End", Toast.LENGTH_SHORT).show()
                     stopSelf()
                     START_NOT_STICKY
+                }
+                ACTION_RESTART -> {
+                    Toast.makeText(this, "Service Restart", Toast.LENGTH_SHORT).show()
+                    START_STICKY
                 }
                 else -> throw RuntimeException("Falha no Serviço")
             }
@@ -80,6 +85,8 @@ class RecorderService : Service() {
             START_NOT_STICKY
         }
     }
+
+
 
     override fun onBind(intent: Intent?): IBinder? = null
 

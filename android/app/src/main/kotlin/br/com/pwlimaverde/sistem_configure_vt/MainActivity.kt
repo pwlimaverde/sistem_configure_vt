@@ -42,6 +42,13 @@ class MainActivity : FlutterActivity() {
         ContextCompat.startForegroundService(this, endIntent)
     }
 
+    private fun restartService() {
+        val restartIntent = Intent(this, RecorderService::class.java).apply {
+            action = RecorderService.ACTION_RESTART
+        }
+        ContextCompat.startForegroundService(this, restartIntent)
+    }
+
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
 
@@ -64,6 +71,10 @@ class MainActivity : FlutterActivity() {
             if (call.method == "onEnd") {
                 endService()
                 result.success("Method End Service")
+            }
+            if (call.method == "onRestart") {
+                restartService()
+                result.success("Method Restart Service")
             }
         }
     }
