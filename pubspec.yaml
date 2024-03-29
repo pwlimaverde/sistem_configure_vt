@@ -3,7 +3,7 @@ description: "Progeto para otimizar as configuracoes android."
 
 publish_to: "none"
 
-version: 1.1.0
+version: 1.2.0
 
 environment:
   sdk: ">=3.3.0 <4.0.0"
