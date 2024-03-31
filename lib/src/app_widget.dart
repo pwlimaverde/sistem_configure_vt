@@ -61,8 +61,12 @@ Future<void> init() async {
 
     Future<void> init2() async{
       await Permission.notification.isDenied.then((value) {
+        Logger().d(
+          "permission notifi");
         if (value) {
           Permission.notification.request();
+          Logger().d(
+          "permission notifi $value");
         }
       });
       await Permission.ignoreBatteryOptimizations.isDenied.then((value) {
