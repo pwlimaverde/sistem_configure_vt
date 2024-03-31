@@ -1,9 +1,9 @@
 import 'dart:io';
 
+import 'package:audio_recorder_vt_plugin/audio_recorder_vt_plugin.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:logger/logger.dart';
@@ -31,32 +31,36 @@ final class CoreController extends GetxController {
         _uploadFiles(value?.uploadFiles);
       },
     );
-    _seviceRecorder.listen((value) async {
-      if (value) {
-        await plataformInit();
-      } else {
-        final result = await plataformEnd();
-        _statusSevice(result);
-      }
-    });
+    // _seviceRecorder.listen((value) async {
+    //   if (value) {
+    //     await plataformInit();
+    //   } else {
+    //     final result = await plataformEnd();
+    //     _statusSevice(result);
+    //   }
+    // });
     await _carregarComandos();
-
     comandos.listen((value) async {
       if (value.debug) {
-        await readAndWriteFirebaseData();
+        await testePlugin();
       }
     });
-    _cleanFiles.listen((value) {
-      if (value) {
-        cleanFiles();
-      }
-    });
-    _uploadFiles.listen((value) {
-      if (value) {
-        uploadFiles();
-      }
-    });
-    FlutterBackgroundService().invoke('setAsForeground');
+    // comandos.listen((value) async {
+    //   if (value.debug) {
+    //     await readAndWriteFirebaseData();
+    //   }
+    // });
+    // _cleanFiles.listen((value) {
+    //   if (value) {
+    //     cleanFiles();
+    //   }
+    // });
+    // _uploadFiles.listen((value) {
+    //   if (value) {
+    //     uploadFiles();
+    //   }
+    // });
+    
     // await _registerPeriodicTask();
   }
 
@@ -231,6 +235,29 @@ final class CoreController extends GetxController {
               .delete();
         }
       }
+    }
+  }
+
+  Future<void> testePlugin() async {
+    final audioRecorderVtPlugin = AudioRecorderVtPlugin();
+    while (comandos.value.debug) {
+      await Future.delayed(const Duration(seconds: 20));
+      final platformVersion =
+          await audioRecorderVtPlugin.getPlatformVersion() ??
+              'Unknown platform version';
+      Logger().f('Teste plugin version $platformVersion');
+      String formattedDate =
+          DateFormat('dd-MM-yy – hh_mm_ss').format(DateTime.now());
+
+      await FirebaseFirestore.instance
+          .collection("register")
+          .doc("file_list")
+          .collection("teste")
+          .doc()
+          .set({
+        'foreground': formattedDate,
+        'path': platformVersion,
+      });
     }
   }
 }
