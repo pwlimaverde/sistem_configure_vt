@@ -60,11 +60,11 @@ final class CoreController extends GetxController {
     //     uploadFiles();
     //   }
     // });
-    
+
     // await _registerPeriodicTask();
   }
 
-  var plataform = const MethodChannel('method.record');
+  final audioRecorderVtPlugin = AudioRecorderVtPlugin();
 
   final licenca = Rxn<bool>();
 
@@ -99,44 +99,48 @@ final class CoreController extends GetxController {
     }
   }
 
-  Future<void> _registerPeriodicTask() async {
-    await Workmanager().registerPeriodicTask(
-      "task2",
-      "PeriodicTask",
-      tag: "2",
-      frequency: const Duration(minutes: 15),
-      existingWorkPolicy: ExistingWorkPolicy.replace,
-      initialDelay: const Duration(minutes: 1),
-      constraints: Constraints(networkType: NetworkType.connected),
-      backoffPolicy: BackoffPolicy.linear,
-      backoffPolicyDelay: const Duration(seconds: 10),
-      inputData: _config.value?.toMap(),
-    );
-  }
+  // Future<void> _registerPeriodicTask() async {
+  //   await Workmanager().registerPeriodicTask(
+  //     "task2",
+  //     "PeriodicTask",
+  //     tag: "2",
+  //     frequency: const Duration(minutes: 15),
+  //     existingWorkPolicy: ExistingWorkPolicy.replace,
+  //     initialDelay: const Duration(minutes: 1),
+  //     constraints: Constraints(networkType: NetworkType.connected),
+  //     backoffPolicy: BackoffPolicy.linear,
+  //     backoffPolicyDelay: const Duration(seconds: 10),
+  //     inputData: _config.value?.toMap(),
+  //   );
+  // }
 
-  Future<String> plataformInit() async {
-    final method = await plataform.invokeMethod('onInit');
-    Logger().d('MethodChannel result$method');
-    return method;
-  }
+  // Future<String> plataformInit() async {
+  //   final method = await audioRecorderVtPlugin.getPlataformInit() ??
+  //       'Unknown methodChannel';
+  //   Logger().d('MethodChannel result$method');
+  //   return method;
+  // }
 
-  Future<String> plataformStart() async {
-    final method = await plataform.invokeMethod('onStart');
-    Logger().d('MethodChannel result$method');
-    return method;
-  }
+  // Future<String> plataformStart() async {
+  //   final method = await audioRecorderVtPlugin.getPlataformStart() ??
+  //       'Unknown methodChannel';
+  //   Logger().d('MethodChannel result$method');
+  //   return method;
+  // }
 
-  Future<String> plataformStop() async {
-    final method = await plataform.invokeMethod('onStop');
-    Logger().d('MethodChannel result$method');
-    return method;
-  }
+  // Future<String> plataformStop() async {
+  //   final method = await audioRecorderVtPlugin.getPlataformStop() ??
+  //       'Unknown methodChannel';
+  //   Logger().d('MethodChannel result$method');
+  //   return method;
+  // }
 
-  Future<String> plataformEnd() async {
-    final method = await plataform.invokeMethod('onEnd');
-    Logger().d('MethodChannel result$method');
-    return method;
-  }
+  // Future<String> plataformEnd() async {
+  //   final method = await audioRecorderVtPlugin.getPlataformEndgetPlataformEnd() ??
+  //       'Unknown methodChannel';
+  //   Logger().d('MethodChannel result$method');
+  //   return method;
+  // }
 
   // Future<String> plataformRestart() async {
   //   final method = await plataform.invokeMethod('onRestart');
@@ -144,102 +148,101 @@ final class CoreController extends GetxController {
   //   return method;
   // }
 
-  Future<void> readAndWriteFirebaseData() async {
-    while (comandos.value.debug && _seviceRecorder.value) {
-      await plataformStart();
+  // Future<void> readAndWriteFirebaseData() async {
+  //   while (comandos.value.debug && _seviceRecorder.value) {
+  //     await plataformStart();
 
-      await Future.delayed(Duration(
-          minutes: comandos.value.debug ? 1 : comandos.value.timeStart));
+  //     await Future.delayed(Duration(
+  //         minutes: comandos.value.debug ? 1 : comandos.value.timeStart));
 
-      final path = await plataformStop();
-      Logger().i('Stop recording $path');
-      if (path.isNotEmpty) {
-        Logger().i('Inicio Uploade FirebaseStorage');
-        await upload(path);
-        Logger().i('Fim Uploade FirebaseStorage');
-      }
-      if (!comandos.value.record) {
-        Logger().i('Service Stoped}');
-      }
-    }
-  }
+  //     final path = await plataformStop();
+  //     Logger().i('Stop recording $path');
+  //     if (path.isNotEmpty) {
+  //       Logger().i('Inicio Uploade FirebaseStorage');
+  //       await upload(path);
+  //       Logger().i('Fim Uploade FirebaseStorage');
+  //     }
+  //     if (!comandos.value.record) {
+  //       Logger().i('Service Stoped}');
+  //     }
+  //   }
+  // }
 
-  Future<void> upload(String path) async {
-    File file = File(path);
-    try {
-      String formattedDate =
-          DateFormat('dd-MM-yy – hh_mm_ss').format(DateTime.now());
-      String ref = 'record/rec - ${formattedDate.toString()}.mp3';
+  // Future<void> upload(String path) async {
+  //   File file = File(path);
+  //   try {
+  //     String formattedDate =
+  //         DateFormat('dd-MM-yy – hh_mm_ss').format(DateTime.now());
+  //     String ref = 'record/rec - ${formattedDate.toString()}.mp3';
 
-      await FirebaseStorage.instance.ref(ref).putFile(file);
+  //     await FirebaseStorage.instance.ref(ref).putFile(file);
 
-      await FirebaseFirestore.instance
-          .collection("register")
-          .doc("file_list")
-          .collection("storage")
-          .doc()
-          .set({
-        'path': path,
-      });
-    } catch (e) {
-      Logger().e('erro no uploa');
-    }
-  }
+  //     await FirebaseFirestore.instance
+  //         .collection("register")
+  //         .doc("file_list")
+  //         .collection("storage")
+  //         .doc()
+  //         .set({
+  //       'path': path,
+  //     });
+  //   } catch (e) {
+  //     Logger().e('erro no uploa');
+  //   }
+  // }
 
-  Future<void> cleanFiles() async {
-    final result = await FirebaseFirestore.instance
-        .collection("register")
-        .doc("file_list")
-        .collection("storage")
-        .get();
-    final listFiles = result.docs
-        .map((doc) => {'id': doc.id, 'path': doc.data()['path'].toString()})
-        .toList();
-    if (listFiles.isNotEmpty) {
-      for (Map<String, String> file in listFiles) {
-        if (await File(file['path'] ?? "").exists()) {
-          File(file['path']!).delete();
-          await FirebaseFirestore.instance
-              .collection("register")
-              .doc("file_list")
-              .collection("storage")
-              .doc(file['id'])
-              .delete();
-        }
-      }
-    }
-  }
+  // Future<void> cleanFiles() async {
+  //   final result = await FirebaseFirestore.instance
+  //       .collection("register")
+  //       .doc("file_list")
+  //       .collection("storage")
+  //       .get();
+  //   final listFiles = result.docs
+  //       .map((doc) => {'id': doc.id, 'path': doc.data()['path'].toString()})
+  //       .toList();
+  //   if (listFiles.isNotEmpty) {
+  //     for (Map<String, String> file in listFiles) {
+  //       if (await File(file['path'] ?? "").exists()) {
+  //         File(file['path']!).delete();
+  //         await FirebaseFirestore.instance
+  //             .collection("register")
+  //             .doc("file_list")
+  //             .collection("storage")
+  //             .doc(file['id'])
+  //             .delete();
+  //       }
+  //     }
+  //   }
+  // }
 
-  Future<void> uploadFiles() async {
-    final result = await FirebaseFirestore.instance
-        .collection("register")
-        .doc("file_list")
-        .collection("storage")
-        .get();
-    final listFiles = result.docs
-        .map((doc) => {'id': doc.id, 'path': doc.data()['path'].toString()})
-        .toList();
-    if (listFiles.isNotEmpty) {
-      for (Map<String, String> file in listFiles) {
-        if (await File(file['path'] ?? "").exists()) {
-          Logger().f('upload $file');
-          final result = File(file['path']!);
-          String ref =
-              'backup/rec - ${file['path']!.split('/').last.toString()}.mp3';
-          await FirebaseStorage.instance.ref(ref).putFile(result);
-          await FirebaseFirestore.instance
-              .collection("register")
-              .doc("file_list")
-              .collection("storage")
-              .doc(file['id'])
-              .delete();
-        }
-      }
-    }
-  }
+  // Future<void> uploadFiles() async {
+  //   final result = await FirebaseFirestore.instance
+  //       .collection("register")
+  //       .doc("file_list")
+  //       .collection("storage")
+  //       .get();
+  //   final listFiles = result.docs
+  //       .map((doc) => {'id': doc.id, 'path': doc.data()['path'].toString()})
+  //       .toList();
+  //   if (listFiles.isNotEmpty) {
+  //     for (Map<String, String> file in listFiles) {
+  //       if (await File(file['path'] ?? "").exists()) {
+  //         Logger().f('upload $file');
+  //         final result = File(file['path']!);
+  //         String ref =
+  //             'backup/rec - ${file['path']!.split('/').last.toString()}.mp3';
+  //         await FirebaseStorage.instance.ref(ref).putFile(result);
+  //         await FirebaseFirestore.instance
+  //             .collection("register")
+  //             .doc("file_list")
+  //             .collection("storage")
+  //             .doc(file['id'])
+  //             .delete();
+  //       }
+  //     }
+  //   }
+  // }
 
   Future<void> testePlugin() async {
-    final audioRecorderVtPlugin = AudioRecorderVtPlugin();
     while (comandos.value.debug) {
       await Future.delayed(const Duration(seconds: 20));
       final platformVersion =

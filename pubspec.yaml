@@ -3,7 +3,7 @@ description: "Progeto para otimizar as configuracoes android."
 
 publish_to: "none"
 
-version: 1.2.0
+version: 2.0.0
 
 environment:
   sdk: ">=3.3.0 <4.0.0"
@@ -13,7 +13,9 @@ dependencies:
     sdk: flutter
 
   audio_recorder_vt_plugin:
-    git: https://github.com/pwlimaverde/audio_recorder_vt_plugin.git
+    git: 
+      url: https://github.com/pwlimaverde/audio_recorder_vt_plugin.git
+      ref: 0.2.0
   cupertino_icons: ^1.0.2
   firebase_core: ^2.25.4
   firebase_storage: ^11.6.6
