@@ -44,12 +44,10 @@ packages:
   audio_recorder_vt_plugin:
     dependency: "direct main"
     description:
-      path: "."
-      ref: HEAD
-      resolved-ref: e0b1610f249ed50748d133a60dec50d528911ad9
-      url: "https://github.com/pwlimaverde/audio_recorder_vt_plugin.git"
-    source: git
-    version: "0.1.0"
+      path: "../../PLUGIN/audio_recorder_vt_plugin"
+      relative: true
+    source: path
+    version: "0.5.0"
   boolean_selector:
     dependency: transitive
     description:

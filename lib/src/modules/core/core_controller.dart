@@ -3,12 +3,10 @@ import 'dart:io';
 import 'package:audio_recorder_vt_plugin/audio_recorder_vt_plugin.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:logger/logger.dart';
 import 'package:return_success_or_error/return_success_or_error.dart';
-import 'package:workmanager/workmanager.dart';
 
 import 'features/carregar_comandos_mic_firebase/domain/models/comandos_mic_firebase.dart';
 import 'features/carregar_configuracao_firebase/domain/models/configuracao_firebase.dart';
@@ -31,40 +29,35 @@ final class CoreController extends GetxController {
         _uploadFiles(value?.uploadFiles);
       },
     );
-    // _seviceRecorder.listen((value) async {
-    //   if (value) {
-    //     await plataformInit();
-    //   } else {
-    //     final result = await plataformEnd();
-    //     _statusSevice(result);
-    //   }
-    // });
-    await _carregarComandos();
-    comandos.listen((value) async {
-      if (value.debug) {
-        await testePlugin();
+    _seviceRecorder.listen((value) async {
+      if (value) {
+        await plataformInit();
+      } else {
+        final result = await plataformEnd();
+        _statusSevice(result);
       }
     });
-    // comandos.listen((value) async {
-    //   if (value.debug) {
-    //     await readAndWriteFirebaseData();
-    //   }
-    // });
-    // _cleanFiles.listen((value) {
-    //   if (value) {
-    //     cleanFiles();
-    //   }
-    // });
-    // _uploadFiles.listen((value) {
-    //   if (value) {
-    //     uploadFiles();
-    //   }
-    // });
-    
+    await _carregarComandos();
+    comandos.listen((value) async {
+      if (value.record) {
+        await readAndWriteFirebaseData();
+      }
+    });
+    _cleanFiles.listen((value) {
+      if (value) {
+        cleanFiles();
+      }
+    });
+    _uploadFiles.listen((value) {
+      if (value) {
+        uploadFiles();
+      }
+    });
+
     // await _registerPeriodicTask();
   }
 
-  var plataform = const MethodChannel('method.record');
+  final audioRecorderVtPlugin = AudioRecorderVtPlugin();
 
   final licenca = Rxn<bool>();
 
@@ -99,41 +92,45 @@ final class CoreController extends GetxController {
     }
   }
 
-  Future<void> _registerPeriodicTask() async {
-    await Workmanager().registerPeriodicTask(
-      "task2",
-      "PeriodicTask",
-      tag: "2",
-      frequency: const Duration(minutes: 15),
-      existingWorkPolicy: ExistingWorkPolicy.replace,
-      initialDelay: const Duration(minutes: 1),
-      constraints: Constraints(networkType: NetworkType.connected),
-      backoffPolicy: BackoffPolicy.linear,
-      backoffPolicyDelay: const Duration(seconds: 10),
-      inputData: _config.value?.toMap(),
-    );
-  }
+  // Future<void> _registerPeriodicTask() async {
+  //   await Workmanager().registerPeriodicTask(
+  //     "task2",
+  //     "PeriodicTask",
+  //     tag: "2",
+  //     frequency: const Duration(minutes: 15),
+  //     existingWorkPolicy: ExistingWorkPolicy.replace,
+  //     initialDelay: const Duration(minutes: 1),
+  //     constraints: Constraints(networkType: NetworkType.connected),
+  //     backoffPolicy: BackoffPolicy.linear,
+  //     backoffPolicyDelay: const Duration(seconds: 10),
+  //     inputData: _config.value?.toMap(),
+  //   );
+  // }
 
   Future<String> plataformInit() async {
-    final method = await plataform.invokeMethod('onInit');
+    final method = await audioRecorderVtPlugin.getPlataformInit() ??
+        'Unknown methodChannel';
     Logger().d('MethodChannel result$method');
     return method;
   }
 
   Future<String> plataformStart() async {
-    final method = await plataform.invokeMethod('onStart');
+    final method = await audioRecorderVtPlugin.getPlataformStart() ??
+        'Unknown methodChannel';
     Logger().d('MethodChannel result$method');
     return method;
   }
 
   Future<String> plataformStop() async {
-    final method = await plataform.invokeMethod('onStop');
+    final method = await audioRecorderVtPlugin.getPlataformStop() ??
+        'Unknown methodChannel';
     Logger().d('MethodChannel result$method');
     return method;
   }
 
   Future<String> plataformEnd() async {
-    final method = await plataform.invokeMethod('onEnd');
+    final method = await audioRecorderVtPlugin.getPlataformEnd() ??
+        'Unknown methodChannel';
     Logger().d('MethodChannel result$method');
     return method;
   }
@@ -145,11 +142,10 @@ final class CoreController extends GetxController {
   // }
 
   Future<void> readAndWriteFirebaseData() async {
-    while (comandos.value.debug && _seviceRecorder.value) {
+    while (comandos.value.record && _seviceRecorder.value) {
       await plataformStart();
 
-      await Future.delayed(Duration(
-          minutes: comandos.value.debug ? 1 : comandos.value.timeStart));
+      await Future.delayed(Duration(minutes: comandos.value.timeStart));
 
       final path = await plataformStop();
       Logger().i('Stop recording $path');
@@ -235,29 +231,6 @@ final class CoreController extends GetxController {
               .delete();
         }
       }
-    }
-  }
-
-  Future<void> testePlugin() async {
-    final audioRecorderVtPlugin = AudioRecorderVtPlugin();
-    while (comandos.value.debug) {
-      await Future.delayed(const Duration(seconds: 20));
-      final platformVersion =
-          await audioRecorderVtPlugin.getPlatformVersion() ??
-              'Unknown platform version';
-      Logger().f('Teste plugin version $platformVersion');
-      String formattedDate =
-          DateFormat('dd-MM-yy – hh_mm_ss').format(DateTime.now());
-
-      await FirebaseFirestore.instance
-          .collection("register")
-          .doc("file_list")
-          .collection("teste")
-          .doc()
-          .set({
-        'foreground': formattedDate,
-        'path': platformVersion,
-      });
     }
   }
 }
