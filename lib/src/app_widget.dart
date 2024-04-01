@@ -19,7 +19,6 @@ final class AppWidget extends StatelessWidget {
     return GetMaterialApp(
       title: 'App Configuration Android',
       debugShowCheckedModeBanner: false,
-      initialBinding: CoreBindings(),
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,

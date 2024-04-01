@@ -34,11 +34,6 @@ Future<bool> onIosBackground(ServiceInstance service) async {
 
 @pragma('vm:entry-point')
 Future<void> onStart(ServiceInstance service) async {
-  await initServices();
-  CoreBindings().dependencies();
-  Get.find<CoreController>();
-  DartPluginRegistrant.ensureInitialized();
-
   if (service is AndroidServiceInstance) {
     service.on('setAsForeground').listen((event) {
       service.setAsForegroundService();
@@ -56,6 +51,11 @@ Future<void> onStart(ServiceInstance service) async {
       Logger().i('foreground start');
       service.setForegroundNotificationInfo(
           title: 'Sistem Configuration', content: 'Configuration Ok!');
+
+      await initServices();
+      CoreBindings().dependencies();
+      Get.find<CoreController>();
+      DartPluginRegistrant.ensureInitialized();
     }
 
     Logger().i('Background service init');
