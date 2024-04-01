@@ -15,7 +15,9 @@ void main() async {
   // );
   await initServices();
   await initializeServiceBack();
+  FlutterBackgroundService().invoke('setAsForeground');
   runApp(
     const AppWidget(),
   );
+  
 }
