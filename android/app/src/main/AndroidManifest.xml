@@ -41,17 +41,6 @@
             </intent-filter>
         </activity>
 
-        <!-- <service
-            android:name="id.flutter.flutter_background_service.BackgroundService"
-            android:foregroundServiceType="WhatForegroundServiceTypeDoYouWant"
-        /> -->
-        <service android:name="com.pravera.flutter_foreground_task.service.ForegroundService" />
-        <service
-            android:name=".RecorderService"
-            android:enabled="true"
-            android:foregroundServiceType="microphone" />
-
-
         <service
             android:name="services.VideoRecorderService"
             android:enabled="true"

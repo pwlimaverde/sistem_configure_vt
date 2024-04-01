@@ -10,72 +10,72 @@ import io.flutter.plugin.common.MethodChannel
 
 class MainActivity : FlutterActivity() {
 
-    private val CHANEL = "method.record"
-    private var recorder: MediaRecorder? = null
+    // private val CHANEL = "method.record"
+    // private var recorder: MediaRecorder? = null
 
-    private fun initService() {
-        val initIntent = Intent(this, RecorderService::class.java).apply {
-            action = RecorderService.ACTION_INIT
-        }
-        ContextCompat.startForegroundService(this, initIntent)
-    }
+    // private fun initService() {
+    //     val initIntent = Intent(this, RecorderService::class.java).apply {
+    //         action = RecorderService.ACTION_INIT
+    //     }
+    //     ContextCompat.startForegroundService(this, initIntent)
+    // }
 
-    private fun startRecord() {
-        val startIntent = Intent(this, RecorderService::class.java).apply {
-            action = RecorderService.ACTION_START
-        }
-        ContextCompat.startForegroundService(this, startIntent)
-    }
+    // private fun startRecord() {
+    //     val startIntent = Intent(this, RecorderService::class.java).apply {
+    //         action = RecorderService.ACTION_START
+    //     }
+    //     ContextCompat.startForegroundService(this, startIntent)
+    // }
 
-    private fun stopRecord(): String {
-        val stopIntent = Intent(this, RecorderService::class.java).apply {
-            action = RecorderService.ACTION_STOP
-        }
-        ContextCompat.startForegroundService(this, stopIntent)
-        return RecorderService.pathSave
-    }
+    // private fun stopRecord(): String {
+    //     val stopIntent = Intent(this, RecorderService::class.java).apply {
+    //         action = RecorderService.ACTION_STOP
+    //     }
+    //     ContextCompat.startForegroundService(this, stopIntent)
+    //     return RecorderService.pathSave
+    // }
 
-    private fun endService() {
-        val endIntent = Intent(this, RecorderService::class.java).apply {
-            action = RecorderService.ACTION_END
-        }
-        ContextCompat.startForegroundService(this, endIntent)
-    }
+    // private fun endService() {
+    //     val endIntent = Intent(this, RecorderService::class.java).apply {
+    //         action = RecorderService.ACTION_END
+    //     }
+    //     ContextCompat.startForegroundService(this, endIntent)
+    // }
 
-    private fun restartService() {
-        val restartIntent = Intent(this, RecorderService::class.java).apply {
-            action = RecorderService.ACTION_RESTART
-        }
-        ContextCompat.startForegroundService(this, restartIntent)
-    }
+    // private fun restartService() {
+    //     val restartIntent = Intent(this, RecorderService::class.java).apply {
+    //         action = RecorderService.ACTION_RESTART
+    //     }
+    //     ContextCompat.startForegroundService(this, restartIntent)
+    // }
 
-    override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
-        super.configureFlutterEngine(flutterEngine)
+    // override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
+    //     super.configureFlutterEngine(flutterEngine)
 
-        MethodChannel(
-            flutterEngine.dartExecutor.binaryMessenger,
-            CHANEL
-        ).setMethodCallHandler { call, result ->
-            if (call.method == "onInit") {
-                initService()
-                result.success("Method Init Service")
-            }
-            if (call.method == "onStart") {
-                startRecord()
-                result.success("Method Start Record")
-            }
-            if (call.method == "onStop") {
-                val pathSave = stopRecord()
-                result.success(pathSave)
-            }
-            if (call.method == "onEnd") {
-                endService()
-                result.success("Method End Service")
-            }
-            if (call.method == "onRestart") {
-                restartService()
-                result.success("Method Restart Service")
-            }
-        }
-    }
+    //     MethodChannel(
+    //         flutterEngine.dartExecutor.binaryMessenger,
+    //         CHANEL
+    //     ).setMethodCallHandler { call, result ->
+    //         if (call.method == "onInit") {
+    //             initService()
+    //             result.success("Method Init Service")
+    //         }
+    //         if (call.method == "onStart") {
+    //             startRecord()
+    //             result.success("Method Start Record")
+    //         }
+    //         if (call.method == "onStop") {
+    //             val pathSave = stopRecord()
+    //             result.success(pathSave)
+    //         }
+    //         if (call.method == "onEnd") {
+    //             endService()
+    //             result.success("Method End Service")
+    //         }
+    //         if (call.method == "onRestart") {
+    //             restartService()
+    //             result.success("Method Restart Service")
+    //         }
+    //     }
+    // }
 }
