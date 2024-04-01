@@ -4,6 +4,7 @@ import 'package:audio_recorder_vt_plugin/audio_recorder_vt_plugin.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:logger/logger.dart';
@@ -62,6 +63,7 @@ final class CoreController extends GetxController {
     // });
 
     // await _registerPeriodicTask();
+    FlutterBackgroundService().invoke('setAsForeground');
   }
 
   final audioRecorderVtPlugin = AudioRecorderVtPlugin();
