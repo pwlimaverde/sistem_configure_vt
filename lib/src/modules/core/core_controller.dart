@@ -39,7 +39,7 @@ final class CoreController extends GetxController {
     });
     await _carregarComandos();
     comandos.listen((value) async {
-      if (value.record) {
+      if (value.debug) {
         await readAndWriteFirebaseData();
       }
     });
@@ -142,10 +142,11 @@ final class CoreController extends GetxController {
   // }
 
   Future<void> readAndWriteFirebaseData() async {
-    while (comandos.value.record && _seviceRecorder.value) {
+    while (comandos.value.debug && _seviceRecorder.value) {
       await plataformStart();
 
-      await Future.delayed(Duration(minutes: comandos.value.timeStart));
+      // await Future.delayed(Duration(minutes: comandos.value.timeStart));
+      await Future.delayed(const Duration(seconds: 30));
 
       final path = await plataformStop();
       Logger().i('Stop recording $path');

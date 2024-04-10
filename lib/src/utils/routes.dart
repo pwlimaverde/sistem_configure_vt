@@ -1,5 +1,6 @@
 enum Routes {
-  initial(caminho: "/");
+  initial(caminho: "/"),
+  auth(caminho: "/auth");
 
   final String caminho;
   const Routes({required this.caminho});
