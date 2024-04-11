@@ -35,6 +35,7 @@ dependencies:
   flutter_background_service: ^5.0.5
   flutter_background_service_android: ^6.2.2
   firebase_auth: ^4.19.1
+  google_sign_in: ^6.2.1
   
   
   

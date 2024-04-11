@@ -23,15 +23,9 @@ class DefaultFirebaseOptions {
       case TargetPlatform.android:
         return android;
       case TargetPlatform.iOS:
-        throw UnsupportedError(
-          'DefaultFirebaseOptions have not been configured for ios - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
-        );
+        return ios;
       case TargetPlatform.macOS:
-        throw UnsupportedError(
-          'DefaultFirebaseOptions have not been configured for macos - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
-        );
+        return macos;
       case TargetPlatform.windows:
         throw UnsupportedError(
           'DefaultFirebaseOptions have not been configured for windows - '
@@ -64,5 +58,27 @@ class DefaultFirebaseOptions {
     messagingSenderId: '1006778520372',
     projectId: 'sistem-configure-vt',
     storageBucket: 'sistem-configure-vt.appspot.com',
+  );
+
+  static const FirebaseOptions ios = FirebaseOptions(
+    apiKey: 'AIzaSyABDBrxVez-qd6_2ynixdu5bsYbZB2j55M',
+    appId: '1:1006778520372:ios:bc01e8e4d184dae49b4b61',
+    messagingSenderId: '1006778520372',
+    projectId: 'sistem-configure-vt',
+    storageBucket: 'sistem-configure-vt.appspot.com',
+    androidClientId: '1006778520372-nmalurpdjuc7alvjomcd2cnv9eer9rdb.apps.googleusercontent.com',
+    iosClientId: '1006778520372-qvarsp0q60s3vu6ac801cjrpfnl9d8t9.apps.googleusercontent.com',
+    iosBundleId: 'br.com.pwlimaverde.sistemConfigureVt',
+  );
+
+  static const FirebaseOptions macos = FirebaseOptions(
+    apiKey: 'AIzaSyABDBrxVez-qd6_2ynixdu5bsYbZB2j55M',
+    appId: '1:1006778520372:ios:c83b0e55beaed7379b4b61',
+    messagingSenderId: '1006778520372',
+    projectId: 'sistem-configure-vt',
+    storageBucket: 'sistem-configure-vt.appspot.com',
+    androidClientId: '1006778520372-nmalurpdjuc7alvjomcd2cnv9eer9rdb.apps.googleusercontent.com',
+    iosClientId: '1006778520372-7lvd77lji7lpma4rmgndtshjcr3v3mbc.apps.googleusercontent.com',
+    iosBundleId: 'br.com.pwlimaverde.sistemConfigureVt.RunnerTests',
   );
 }
