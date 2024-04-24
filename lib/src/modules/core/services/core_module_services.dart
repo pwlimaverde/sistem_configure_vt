@@ -2,6 +2,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
+import 'package:return_success_or_error/return_success_or_error.dart';
 import 'service/firebase/firebase_service.dart';
 import 'service/permission/permission_service.dart';
 import 'service/storage/storage_service.dart';
@@ -21,7 +22,7 @@ Future<void> initServices() async {
       () => FirebaseService().init(),
       permanent: true,
     ),
-    Get.putAsync<void>(
+    Get.putAsync<Unit>(
       () => PermissionService().init(),
       permanent: true,
     ),

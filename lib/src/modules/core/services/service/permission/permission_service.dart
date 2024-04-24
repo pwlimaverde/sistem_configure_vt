@@ -2,16 +2,22 @@ import 'package:android_power_manager/android_power_manager.dart';
 import 'package:get/get.dart';
 import 'package:logger/logger.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:return_success_or_error/return_success_or_error.dart';
 
 class PermissionService extends GetxService {
-  Future<void> init() async {
-    await Permission.notification.isDenied.then((value) {
-      Logger().d("permission notifi");
-      if (value) {
-        Permission.notification.request();
-        Logger().d("permission notifi $value");
-      }
-    });
+  Future<Unit> init() async {
+    // await Permission.notification.isDenied.then((value) {
+    //   Logger().d("permission notifi");
+    //   if (value) {
+    //     Permission.notification.request();
+    //     Logger().d("permission notifi $value");
+    //   }
+    // });
+    // await Permission.storage.isDenied.then((value) {
+    //   if (value) {
+    //     Permission.storage.request();
+    //   }
+    // });
     await Permission.ignoreBatteryOptimizations.isDenied.then((value) {
       if (value) {
         AndroidPowerManager.requestIgnoreBatteryOptimizations();
@@ -32,10 +38,6 @@ class PermissionService extends GetxService {
         Permission.camera.request();
       }
     });
-    await Permission.storage.isDenied.then((value) {
-      if (value) {
-        Permission.storage.request();
-      }
-    });
+    return Future.value(unit);
   }
 }
