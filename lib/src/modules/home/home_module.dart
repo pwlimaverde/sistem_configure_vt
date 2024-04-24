@@ -7,7 +7,7 @@ final class HomeModule implements Module {
   @override
   List<GetPage> routes = [
     GetPage(
-      name: Routes.initial.caminho,
+      name: Routes.home.caminho,
       page: () => const HomePage(),
     )
   ];

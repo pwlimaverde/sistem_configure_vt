@@ -7,7 +7,7 @@ final class AuthModule implements Module {
   @override
   List<GetPage> routes = [
     GetPage(
-      name: Routes.auth.caminho,
+      name: Routes.initial.caminho,
       page: () => const LoginPage(),
     )
   ];
