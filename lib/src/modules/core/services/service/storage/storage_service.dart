@@ -5,6 +5,6 @@ import 'package:get_storage/get_storage.dart';
 class StorageService extends GetxService {
     Future<GetStorage> init() async {
     final storage = GetStorage();
-    return storage;
+    return Future.value(storage);
   }
 }

@@ -18,7 +18,7 @@ final class CoreController extends GetxController {
   CoreController({required this.featuresCorePresenter});
 
   @override
-  void onInit() async {
+  Future<void> onInit() async {
     super.onInit();
     await _carregarConfiguracao();
     _config.listen(

@@ -6,7 +6,8 @@ import 'package:get/get.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
 class LoginController extends GetxController {
-  //Controles Internos
+
+
   Future<void> signInGoogleLogin({
     required VoidCallback onSuccess,
     required VoidCallback onFail,
@@ -38,20 +39,16 @@ class LoginController extends GetxController {
           final newUser =
               FirebaseFirestore.instance.collection("user").doc(user.uid);
 
+
           newUser.collection("dados").doc("registro").set({
             'nome': nome,
             'email': email,
-            'licenca': null,
-            'stop_service': false,
           });
-
-          newUser.collection("comandos").doc("mic").set({
-            'record': false,
-            'clean_files': false,
-            'upload_files': false,
-            'time_start': 10,
+          
+          newUser.collection("licenca").doc("registro").set({
+            'data_ativacao': null,
+            'data_expiracao': null,
           });
-
         }
       }
 
@@ -59,5 +56,10 @@ class LoginController extends GetxController {
     } catch (e) {
       onFail();
     }
+  }
+
+  Future<void> logOut()async{
+    await FirebaseAuth.instance.signOut();
+    await GoogleSignIn().signOut();
   }
 }

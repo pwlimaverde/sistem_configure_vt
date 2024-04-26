@@ -1,10 +1,9 @@
 import 'package:android_power_manager/android_power_manager.dart';
 import 'package:get/get.dart';
-import 'package:logger/logger.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:return_success_or_error/return_success_or_error.dart';
 
-class PermissionService extends GetxService {
+final class PermissionService extends GetxService {
   Future<Unit> init() async {
     // await Permission.notification.isDenied.then((value) {
     //   Logger().d("permission notifi");

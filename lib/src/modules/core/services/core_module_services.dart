@@ -10,21 +10,24 @@ import 'service/widgets_flutter_binding/widgets_flutter_binding_service.dart';
 
 Future<void> initServices() async {
   await Future.wait([
-    Get.putAsync<WidgetsBinding>(
+    Get.putAsync<Unit>(
       () => WidgetsFlutterBindingService().init(),
       permanent: true,
+      tag: "WidgetsFlutterBindingService",
     ),
     Get.putAsync<GetStorage>(
       () => StorageService().init(),
       permanent: true,
     ),
-    Get.putAsync<FirebaseApp>(
+    Get.putAsync<Unit>(
       () => FirebaseService().init(),
       permanent: true,
+      tag: "FirebaseService",
     ),
     Get.putAsync<Unit>(
       () => PermissionService().init(),
       permanent: true,
+      tag: "PermissionService",
     ),
   ]);
 }
