@@ -7,7 +7,7 @@ import 'package:get/get.dart';
 import 'package:logger/logger.dart';
 import '../core_bindings.dart';
 import '../core_controller.dart';
-import '../services/core_module_services.dart';
+import '../service/core_module_services.dart';
 
 Future<void> initializeServiceBack() async {
   final service = FlutterBackgroundService();

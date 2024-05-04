@@ -10,7 +10,7 @@ import 'package:workmanager/workmanager.dart';
 import '../../../app_widget.dart';
 import '../core_bindings.dart';
 import '../core_controller.dart';
-import '../services/core_module_services.dart';
+import '../service/core_module_services.dart';
 
 @pragma(
     'vm:entry-point') // Mandatory if the App is obfuscated or using Flutter 3.1+
